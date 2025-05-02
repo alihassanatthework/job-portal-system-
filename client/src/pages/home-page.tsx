@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Job } from "@shared/schema";
@@ -13,7 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, BriefcaseBusiness, Briefcase, Building, Search, MapPin, LucideIcon, CheckCircle2, LineChart, Users } from "lucide-react";
+import { Loader2, BriefcaseBusiness, Briefcase, Building, Search, MapPin, LucideIcon, CheckCircle2, LineChart, Users, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 // Feature type for the features section
 type Feature = {
@@ -69,33 +70,88 @@ export default function HomePage() {
         <section className="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 pt-20 pb-16 md:pt-28 md:pb-24">
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center">
-              <div className="md:w-1/2 md:pr-10">
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="md:w-1/2 md:pr-10"
+              >
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white mb-4">
-                  Find Your Dream Job <span className="text-primary">Today</span>
+                  Find Your Dream Job <motion.span 
+                    className="text-primary bg-clip-text"
+                    initial={{ backgroundSize: "100%" }}
+                    animate={{ 
+                      backgroundImage: [
+                        "linear-gradient(90deg, #4F46E5, #8B5CF6)",
+                        "linear-gradient(90deg, #8B5CF6, #4F46E5)",
+                        "linear-gradient(90deg, #4F46E5, #8B5CF6)"
+                      ]
+                    }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                  >Today</motion.span>
                 </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-lg">
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-lg"
+                >
                   Connect with top employers and discover opportunities that match your skills and career goals.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" onClick={() => navigate("/jobs")}>
-                    Browse Jobs
+                </motion.p>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
+                  className="flex flex-col sm:flex-row gap-4"
+                >
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate("/jobs")}
+                    className="group relative overflow-hidden"
+                  >
+                    <span className="relative z-10">Browse Jobs</span>
+                    <span className="absolute inset-0 bg-primary-dark transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></span>
                   </Button>
-                  <Button size="lg" variant="outline" onClick={() => !user && navigate("/auth")}>
-                    {user ? "My Dashboard" : "Join Now"}
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    onClick={() => !user && navigate("/auth")}
+                    className="group relative overflow-hidden"
+                  >
+                    <span className="relative z-10">{user ? "My Dashboard" : "Join Now"}</span>
+                    <span className="absolute inset-0 bg-gray-100 dark:bg-gray-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></span>
                   </Button>
-                </div>
-              </div>
-              <div className="md:w-1/2 mt-10 md:mt-0">
+                </motion.div>
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="md:w-1/2 mt-10 md:mt-0"
+              >
                 <div className="relative">
-                  <div className="w-full h-64 md:h-80 lg:h-96 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                  <motion.div 
+                    initial={{ y: 20 }}
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, repeatType: "reverse" }}
+                    className="w-full h-64 md:h-80 lg:h-96 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center text-white text-xl font-bold shadow-xl"
+                  >
                     {/* We'll replace this with an actual image later */}
                     Job Portal Dashboard Preview
-                  </div>
-                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white">
+                  </motion.div>
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1, rotate: [0, 10, 0] }}
+                    transition={{ 
+                      scale: { delay: 0.5, duration: 0.5, type: "spring" },
+                      rotate: { delay: 1, duration: 2, repeat: Infinity, repeatType: "reverse" }
+                    }}
+                    className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white shadow-lg"
+                  >
                     <Briefcase className="w-10 h-10" />
-                  </div>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Search Bar */}
@@ -135,26 +191,44 @@ export default function HomePage() {
         {/* Features Section */}
         <section className="py-16 bg-white dark:bg-gray-800">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="text-center mb-12">
+            <motion.div 
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7 }}
+            >
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Why Choose Our Platform</h2>
               <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 We provide the tools and resources you need to succeed in your job search.
               </p>
-            </div>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
-                      <feature.icon className="h-6 w-6" />
-                    </div>
-                    <CardTitle>{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                >
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full group">
+                    <CardHeader>
+                      <motion.div 
+                        className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform duration-300"
+                        whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <feature.icon className="h-6 w-6" />
+                      </motion.div>
+                      <CardTitle className="group-hover:text-primary transition-colors duration-300">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -245,52 +319,140 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-primary text-white">
-          <div className="container mx-auto px-4 md:px-6 text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to Take the Next Step in Your Career?</h2>
-            <p className="text-xl mb-8 max-w-3xl mx-auto">
-              Join thousands of professionals who've found their dream jobs through our platform.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button variant="secondary" size="lg" asChild>
-                <Link href="/jobs">Browse Jobs</Link>
-              </Button>
-              {!user && (
-                <Button variant="outline" size="lg" className="bg-transparent text-white border-white hover:bg-white hover:text-primary" asChild>
-                  <Link href="/auth">Sign Up Now</Link>
-                </Button>
-              )}
-            </div>
+        <section className="py-16 bg-primary text-white relative overflow-hidden">
+          {/* Animated background elements */}
+          <motion.div 
+            className="absolute top-0 left-0 w-64 h-64 rounded-full bg-white opacity-5"
+            animate={{ 
+              x: [0, 100, 0],
+              y: [0, 50, 0],
+              scale: [1, 1.2, 1] 
+            }}
+            transition={{ duration: 15, repeat: Infinity, repeatType: "reverse" }}
+          />
+          <motion.div 
+            className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-white opacity-5"
+            animate={{ 
+              x: [0, -100, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.3, 1] 
+            }}
+            transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+          />
+          
+          <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Take the Next Step in Your Career?</h2>
+              <p className="text-xl mb-8 max-w-3xl mx-auto">
+                Join thousands of professionals who've found their dream jobs through our platform.
+              </p>
+              <motion.div 
+                className="flex flex-col sm:flex-row justify-center gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                  <Button variant="secondary" size="lg" asChild className="relative overflow-hidden group">
+                    <Link href="/jobs" className="flex items-center gap-2">
+                      Browse Jobs
+                      <motion.span
+                        initial={{ x: -10, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </motion.span>
+                    </Link>
+                  </Button>
+                </motion.div>
+                
+                {!user && (
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="bg-transparent text-white border-white hover:bg-white hover:text-primary" 
+                      asChild
+                    >
+                      <Link href="/auth">Sign Up Now</Link>
+                    </Button>
+                  </motion.div>
+                )}
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         {/* Newsletter Section */}
         <section className="py-16 bg-white dark:bg-gray-800">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Get Career Tips & Job Alerts</h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Subscribe to our newsletter for exclusive career advice and be the first to know about new opportunities.
-              </p>
+            <motion.div 
+              className="max-w-3xl mx-auto text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Get Career Tips & Job Alerts</h2>
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                  Subscribe to our newsletter for exclusive career advice and be the first to know about new opportunities.
+                </p>
+              </motion.div>
               
-              <form className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary" 
-                  required
-                />
-                <Button type="submit">
-                  Subscribe
-                </Button>
-              </form>
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              <motion.form 
+                className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <motion.div
+                  className="flex-1"
+                  whileTap={{ scale: 0.99 }}
+                >
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary" 
+                    required
+                  />
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button type="submit" className="w-full sm:w-auto">
+                    Subscribe
+                  </Button>
+                </motion.div>
+              </motion.form>
+              
+              <motion.p 
+                className="mt-4 text-sm text-gray-500 dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
                 We care about your data. Read our 
-                <Link href="#" className="font-medium text-primary hover:underline ml-1">
+                <Link href="#" className="font-medium text-primary hover:underline hover:text-primary/80 transition-colors ml-1">
                   Privacy Policy
                 </Link>.
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
           </div>
         </section>
       </main>
