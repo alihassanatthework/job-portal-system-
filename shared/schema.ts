@@ -147,6 +147,7 @@ export const applications = pgTable("applications", {
 export const insertApplicationSchema = createInsertSchema(applications, {
   resumeUrl: (schema) => schema.optional(),
   coverLetter: (schema) => schema.optional(),
+  compatibilityScore: (schema) => schema.optional(),
   status: (schema) => schema.refine(
     val => ['applied', 'reviewed', 'interviewing', 'offered', 'rejected'].includes(val),
     { message: "Status must be one of: applied, reviewed, interviewing, offered, rejected" }

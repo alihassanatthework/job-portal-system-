@@ -19,8 +19,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const location = req.query.location as string | undefined;
       const jobType = req.query.jobType as string | undefined;
       const search = req.query.search as string | undefined;
-      const minSalary = req.query.minSalary ? Number(req.query.minSalary) : undefined;
-      const maxSalary = req.query.maxSalary ? Number(req.query.maxSalary) : undefined;
+      const minSalary = req.query.minSalary ? String(req.query.minSalary) : undefined;
+      const maxSalary = req.query.maxSalary ? String(req.query.maxSalary) : undefined;
       const skill = req.query.skill as string | undefined;
       
       let query = db.select().from(jobs);
@@ -123,8 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         responsibilities: z.string().min(10, "Responsibilities must be at least 10 characters"),
         location: z.string().min(2, "Location must be at least 2 characters"),
         jobType: z.enum(['full-time', 'part-time', 'contract', 'internship']),
-        salaryMin: z.number().optional(),
-        salaryMax: z.number().optional(),
+        salaryMin: z.string().optional(),
+        salaryMax: z.string().optional(),
         skills: z.array(z.string()).optional(),
         employerId: z.number()
       }).parse(jobData);
@@ -174,8 +174,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         responsibilities: z.string().min(10, "Responsibilities must be at least 10 characters").optional(),
         location: z.string().min(2, "Location must be at least 2 characters").optional(),
         jobType: z.enum(['full-time', 'part-time', 'contract', 'internship']).optional(),
-        salaryMin: z.number().optional(),
-        salaryMax: z.number().optional(),
+        salaryMin: z.string().optional(),
+        salaryMax: z.string().optional(),
         skills: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
         expiresAt: z.date().optional()
@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Placeholder for AI-based matching score calculation
       // In a real implementation, this would use NLP to compare skills and job requirements
-      const compatibilityScore = 75.5; // Random score between 0-100 for demo
+      const compatibilityScore = "75.5"; // Random score between 0-100 for demo
 
       const [newApplication] = await db.insert(applications)
         .values({
