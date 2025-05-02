@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const loginFormSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -18,8 +19,12 @@ const loginFormSchema = z.object({
 
 const registerFormSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+  userType: z.enum(["job_seeker", "employer", "admin"], {
+    required_error: "Please select a user type",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -53,8 +58,10 @@ export default function AuthPage() {
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
+      userType: "job_seeker", // Default value
     },
   });
 
@@ -64,8 +71,8 @@ export default function AuthPage() {
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    const { username, password } = data;
-    registerMutation.mutate({ username, password });
+    const { username, password, email, userType } = data;
+    registerMutation.mutate({ username, password, email, userType });
   };
 
   if (isLoading) {
@@ -145,7 +152,7 @@ export default function AuthPage() {
                 <CardHeader>
                   <CardTitle>Create an Account</CardTitle>
                   <CardDescription>
-                    Register to start shopping and tracking your orders
+                    Register to start your job search or post job listings
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -160,6 +167,44 @@ export default function AuthPage() {
                             <FormControl>
                               <Input placeholder="Choose a username" {...field} />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="Enter your email" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
+                        name="userType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>I am registering as</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select user type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="job_seeker">Job Seeker</SelectItem>
+                                <SelectItem value="employer">Employer</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -220,34 +265,34 @@ export default function AuthPage() {
           <div className="relative z-10 p-12 flex flex-col h-full justify-center">
             <div className="max-w-md space-y-5">
               <h1 className="text-3xl font-bold">CareerCraft</h1>
-              <h2 className="text-2xl font-semibold">Elevate Your Professional Identity</h2>
+              <h2 className="text-2xl font-semibold">Your Path to Professional Success</h2>
               <p className="text-lg text-neutral-300">
-                Access premium handcrafted products designed to help you stand out in your job search and career advancement.
+                Join our job portal to connect with top employers and find the perfect career opportunity for your skills and aspirations.
               </p>
               <ul className="space-y-3 text-neutral-300">
                 <li className="flex items-center">
                   <svg className="h-5 w-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Premium handcrafted products</span>
+                  <span>Thousands of job listings from top companies</span>
                 </li>
                 <li className="flex items-center">
                   <svg className="h-5 w-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Fully customizable designs</span>
+                  <span>Personalized job recommendations</span>
                 </li>
                 <li className="flex items-center">
                   <svg className="h-5 w-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Expert career resources</span>
+                  <span>Professional profile building tools</span>
                 </li>
                 <li className="flex items-center">
                   <svg className="h-5 w-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Fast shipping nationwide</span>
+                  <span>Direct messaging with employers</span>
                 </li>
               </ul>
             </div>
