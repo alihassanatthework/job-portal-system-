@@ -65,6 +65,86 @@ export default function ProfilePage() {
     website: "",
     logoUrl: "",
   });
+  
+  // Fetch employer's jobs
+  const { data: employerJobs, isLoading: loadingJobs } = useQuery<Job[]>({
+    queryKey: ['/api/jobs/employer'],
+    enabled: !!user && user.userType === 'employer',
+  });
+  
+  // Add job mutation
+  const addJobMutation = useMutation({
+    mutationFn: async (data: Partial<Job>) => {
+      const response = await apiRequest('POST', '/api/jobs', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Job posted successfully",
+        description: "Your job has been posted and is now visible to job seekers.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      setIsJobDialogOpen(false);
+      resetJobForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to post job",
+        description: error.message || "There was an error posting your job. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Update job mutation
+  const updateJobMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Job> }) => {
+      const response = await apiRequest('PUT', `/api/jobs/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Job updated successfully",
+        description: "Your job posting has been updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      setIsJobDialogOpen(false);
+      setSelectedJob(null);
+      resetJobForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to update job",
+        description: error.message || "There was an error updating your job. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delete job mutation
+  const deleteJobMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest('DELETE', `/api/jobs/${id}`);
+      return response.ok;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Job deleted successfully",
+        description: "Your job posting has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to delete job",
+        description: error.message || "There was an error deleting your job. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Fetch job seeker profile
   const { data: jobSeekerProfile, isLoading: loadingJobSeekerProfile } = useQuery<JobSeekerProfile>({
@@ -192,6 +272,102 @@ export default function ProfilePage() {
       ...prev,
       [name]: value,
     }));
+  };
+  
+  // Job form handlers
+  const resetJobForm = () => {
+    setJobForm({
+      title: "",
+      company: "",
+      location: "",
+      jobType: "full-time",
+      description: "",
+      requirements: "",
+      salaryMin: "",
+      salaryMax: "",
+      contactEmail: "",
+      applicationDeadline: ""
+    });
+  };
+  
+  const handleJobFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setJobForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  
+  const handleJobTypeChange = (value: string) => {
+    setJobForm((prev) => ({
+      ...prev,
+      jobType: value,
+    }));
+  };
+  
+  const handleEditJob = (job: Job) => {
+    setSelectedJob(job);
+    setJobForm({
+      title: job.title || "",
+      company: employerProfile?.companyName || "",
+      location: job.location || "",
+      jobType: job.jobType || "full-time",
+      description: job.description || "",
+      requirements: job.requirements || "",
+      salaryMin: job.salaryMin || "",
+      salaryMax: job.salaryMax || "",
+      contactEmail: job.contactEmail || user?.email || "",
+      applicationDeadline: job.applicationDeadline ? new Date(job.applicationDeadline).toISOString().split('T')[0] : ""
+    });
+    setIsJobDialogOpen(true);
+  };
+  
+  const handleAddNewJob = () => {
+    setSelectedJob(null);
+    setJobForm({
+      title: "",
+      company: employerProfile?.companyName || "",
+      location: employerProfile?.location || "",
+      jobType: "full-time",
+      description: "",
+      requirements: "",
+      salaryMin: "",
+      salaryMax: "",
+      contactEmail: user?.email || "",
+      applicationDeadline: ""
+    });
+    setIsJobDialogOpen(true);
+  };
+  
+  const handleDeleteJob = (jobId: number) => {
+    if (confirm("Are you sure you want to delete this job posting? This action cannot be undone.")) {
+      deleteJobMutation.mutate(jobId);
+    }
+  };
+  
+  const handleSubmitJob = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const jobData = {
+      title: jobForm.title,
+      location: jobForm.location,
+      jobType: jobForm.jobType,
+      description: jobForm.description,
+      requirements: jobForm.requirements,
+      salaryMin: jobForm.salaryMin,
+      salaryMax: jobForm.salaryMax,
+      contactEmail: jobForm.contactEmail,
+      applicationDeadline: jobForm.applicationDeadline ? new Date(jobForm.applicationDeadline).toISOString() : undefined
+    };
+    
+    if (selectedJob) {
+      updateJobMutation.mutate({ 
+        id: selectedJob.id, 
+        data: jobData
+      });
+    } else {
+      addJobMutation.mutate(jobData);
+    }
   };
 
   if (!user) {
@@ -604,6 +780,264 @@ export default function ProfilePage() {
                     </form>
                   </CardContent>
                 </Card>
+              )}
+              
+              {activeTab === "jobs" && isEmployer && (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Your Job Listings</h2>
+                    <Button onClick={handleAddNewJob}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Post New Job
+                    </Button>
+                  </div>
+                  
+                  {loadingJobs ? (
+                    <div className="flex items-center justify-center h-64">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+                      <p>Loading your job listings...</p>
+                    </div>
+                  ) : employerJobs && employerJobs.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4">
+                      {employerJobs.map((job) => (
+                        <Card key={job.id} className="overflow-hidden">
+                          <CardContent className="p-0">
+                            <div className="p-6">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="text-xl font-semibold">{job.title}</h3>
+                                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    <MapPin className="h-4 w-4 mr-1" />
+                                    <span>{job.location || "Remote"}</span>
+                                    <span className="mx-2">•</span>
+                                    <Clock className="h-4 w-4 mr-1" />
+                                    <span className="capitalize">{job.jobType}</span>
+                                    {job.salaryMin && job.salaryMax && (
+                                      <>
+                                        <span className="mx-2">•</span>
+                                        <DollarSign className="h-4 w-4 mr-1" />
+                                        <span>${job.salaryMin} - ${job.salaryMax}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleEditJob(job)}
+                                  >
+                                    <PenSquare className="h-4 w-4 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    variant="destructive" 
+                                    size="sm"
+                                    onClick={() => handleDeleteJob(job.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-4">
+                                <p className="text-sm line-clamp-2">
+                                  {job.description}
+                                </p>
+                              </div>
+                              
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                <Badge variant="outline" className="bg-primary/10">
+                                  <Calendar className="h-3.5 w-3.5 mr-1" />
+                                  Posted: {format(new Date(job.createdAt), 'MMM d, yyyy')}
+                                </Badge>
+                                
+                                {job.applicationDeadline && (
+                                  <Badge variant="outline" className="bg-primary/10">
+                                    <Calendar className="h-3.5 w-3.5 mr-1" />
+                                    Deadline: {format(new Date(job.applicationDeadline), 'MMM d, yyyy')}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-4 py-12">
+                          <Briefcase className="h-16 w-16 text-gray-400 dark:text-gray-600" />
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-semibold">No Job Listings Yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                              You haven't posted any jobs yet. Click the button below to create your first job listing.
+                            </p>
+                          </div>
+                          <Button onClick={handleAddNewJob}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Post Your First Job
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {/* Job Form Dialog */}
+                  <Dialog open={isJobDialogOpen} onOpenChange={setIsJobDialogOpen}>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>{selectedJob ? "Edit Job Posting" : "Create New Job Posting"}</DialogTitle>
+                        <DialogDescription>
+                          {selectedJob 
+                            ? "Update the details of your job posting. Click save when you're done."
+                            : "Fill out the form below to create a new job posting."
+                          }
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <form onSubmit={handleSubmitJob} className="space-y-4">
+                        <div>
+                          <Label htmlFor="title">Job Title *</Label>
+                          <Input
+                            id="title"
+                            name="title"
+                            value={jobForm.title}
+                            onChange={handleJobFormChange}
+                            placeholder="e.g. Senior Frontend Developer"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="location">Location *</Label>
+                            <Input
+                              id="location"
+                              name="location"
+                              value={jobForm.location}
+                              onChange={handleJobFormChange}
+                              placeholder="e.g. New York, Remote"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="jobType">Job Type *</Label>
+                            <Select 
+                              defaultValue={jobForm.jobType}
+                              onValueChange={handleJobTypeChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select job type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="full-time">Full-time</SelectItem>
+                                <SelectItem value="part-time">Part-time</SelectItem>
+                                <SelectItem value="contract">Contract</SelectItem>
+                                <SelectItem value="internship">Internship</SelectItem>
+                                <SelectItem value="freelance">Freelance</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="description">Job Description *</Label>
+                          <Textarea
+                            id="description"
+                            name="description"
+                            value={jobForm.description}
+                            onChange={handleJobFormChange}
+                            rows={4}
+                            placeholder="Describe the job role, responsibilities, etc."
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="requirements">Requirements</Label>
+                          <Textarea
+                            id="requirements"
+                            name="requirements"
+                            value={jobForm.requirements}
+                            onChange={handleJobFormChange}
+                            rows={3}
+                            placeholder="List the required skills, experience, etc."
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="salaryMin">Salary Range (Min)</Label>
+                            <Input
+                              id="salaryMin"
+                              name="salaryMin"
+                              type="text"
+                              inputMode="numeric"
+                              value={jobForm.salaryMin}
+                              onChange={handleJobFormChange}
+                              placeholder="e.g. 50000"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="salaryMax">Salary Range (Max)</Label>
+                            <Input
+                              id="salaryMax"
+                              name="salaryMax"
+                              type="text"
+                              inputMode="numeric"
+                              value={jobForm.salaryMax}
+                              onChange={handleJobFormChange}
+                              placeholder="e.g. 80000"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="contactEmail">Contact Email *</Label>
+                            <Input
+                              id="contactEmail"
+                              name="contactEmail"
+                              type="email"
+                              value={jobForm.contactEmail}
+                              onChange={handleJobFormChange}
+                              placeholder="e.g. careers@company.com"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="applicationDeadline">Application Deadline</Label>
+                            <Input
+                              id="applicationDeadline"
+                              name="applicationDeadline"
+                              type="date"
+                              value={jobForm.applicationDeadline}
+                              onChange={handleJobFormChange}
+                            />
+                          </div>
+                        </div>
+                        
+                        <DialogFooter>
+                          <Button type="button" variant="outline" onClick={() => setIsJobDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            type="submit"
+                            disabled={addJobMutation.isPending || updateJobMutation.isPending}
+                          >
+                            {(addJobMutation.isPending || updateJobMutation.isPending) && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            {selectedJob ? "Update Job" : "Post Job"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
             </>
           )}
