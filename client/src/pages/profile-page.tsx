@@ -3,8 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { JobSeekerProfile, EmployerProfile } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JobSeekerProfile, EmployerProfile, Job } from "@shared/schema";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,35 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Save, User, Building } from "lucide-react";
+import { 
+  Loader2, Save, User, Building, Briefcase, PenSquare, 
+  Trash2, PlusCircle, Calendar, MapPin, DollarSign, Clock
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("account");
+  const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  
+  // Job Form State
+  const [jobForm, setJobForm] = useState({
+    title: "",
+    company: "",
+    location: "",
+    jobType: "full-time",
+    description: "",
+    requirements: "",
+    salaryMin: "",
+    salaryMax: "",
+    contactEmail: "",
+    applicationDeadline: ""
+  });
 
   // Job Seeker Profile Form State
   const [jobSeekerForm, setJobSeekerForm] = useState({
@@ -270,14 +293,24 @@ export default function ProfilePage() {
                   </Button>
                 )}
                 {isEmployer && (
-                  <Button
-                    variant={activeTab === "company" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => setActiveTab("company")}
-                  >
-                    <Building className="mr-2 h-4 w-4" />
-                    Company
-                  </Button>
+                  <>
+                    <Button
+                      variant={activeTab === "company" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("company")}
+                    >
+                      <Building className="mr-2 h-4 w-4" />
+                      Company
+                    </Button>
+                    <Button
+                      variant={activeTab === "jobs" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("jobs")}
+                    >
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Manage Jobs
+                    </Button>
+                  </>
                 )}
               </div>
             </CardContent>
