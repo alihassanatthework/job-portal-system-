@@ -45,6 +45,9 @@ export default function Header() {
           
           {/* Action buttons */}
           <div className="flex items-center space-x-4">
+            {/* Theme toggle */}
+            <ThemeToggle />
+            
             {/* Search button */}
             <button 
               onClick={() => setSearchOpen(!searchOpen)} 
@@ -148,7 +151,7 @@ export default function Header() {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <div className="ml-3">
+              <div className="ml-3 flex-grow">
                 {user ? (
                   <>
                     <div className="text-base font-medium text-gray-800 dark:text-white">{user.username}</div>
@@ -171,6 +174,7 @@ export default function Header() {
                   </div>
                 )}
               </div>
+              <ThemeToggle />
             </div>
           </div>
         </div>
