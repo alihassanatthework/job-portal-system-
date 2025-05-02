@@ -13,6 +13,7 @@ import ProfilePage from "./pages/profile-page";
 import ApplicationsPage from "./pages/applications-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
+import { ThemeProvider } from "./hooks/use-theme";
 
 function Router() {
   return (
@@ -31,16 +32,18 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <div className="flex-grow">
-            <Router />
+      <ThemeProvider>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <div className="flex-grow">
+              <Router />
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
-        <Toaster />
-      </AuthProvider>
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
