@@ -61,15 +61,15 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400">
               <li className="flex items-start">
                 <Mail className="h-5 w-5 mr-2 mt-0.5 text-primary/60" />
-                <span>support@jobconnect.com</span>
+                <span>f2022065242@umt.edu.pk</span>
               </li>
               <li className="flex items-start">
                 <Phone className="h-5 w-5 mr-2 mt-0.5 text-primary/60" />
-                <span>1-800-JOB-CONN</span>
+                <span>03106831523</span>
               </li>
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 mt-0.5 text-primary/60" />
-                <span>100 Employment Avenue<br />Career Center, PC 45678</span>
+                <span>Johar Town<br />Lahore, Pakistan</span>
               </li>
             </ul>
           </div>
