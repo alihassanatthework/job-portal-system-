@@ -14,15 +14,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { 
   Loader2, Save, User, Building, Briefcase, PenSquare, 
-  Trash2, PlusCircle, Calendar, MapPin, DollarSign, Clock
+  Trash2, PlusCircle, Calendar, MapPin, DollarSign, Clock,
+  Heart, Eye, MessageCircle, FileText, Star, LogOut,
+  MessageSquare, Users, InboxIcon, Ban, CheckCircle,
+  Upload, Send
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("account");
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
@@ -458,16 +469,84 @@ export default function ProfilePage() {
                   <User className="mr-2 h-4 w-4" />
                   Account
                 </Button>
-                {isJobSeeker && (
-                  <Button
-                    variant={activeTab === "profile" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => setActiveTab("profile")}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Button>
+                
+                {/* Admin Navigation */}
+                {isAdmin && (
+                  <>
+                    <Button
+                      variant={activeTab === "review-feedback" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("review-feedback")}
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Review Feedback
+                    </Button>
+                    <Button
+                      variant={activeTab === "manage-users" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("manage-users")}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Manage Users
+                    </Button>
+                  </>
                 )}
+                
+                {/* Job Seeker Navigation */}
+                {isJobSeeker && (
+                  <>
+                    <Button
+                      variant={activeTab === "profile" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("profile")}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Button>
+                    <Button
+                      variant={activeTab === "wishlist" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("wishlist")}
+                    >
+                      <Heart className="mr-2 h-4 w-4" />
+                      Wishlist
+                    </Button>
+                    <Button
+                      variant={activeTab === "applications" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("applications")}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      My Applications
+                    </Button>
+                    <Button
+                      variant={activeTab === "messages" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("messages")}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                    </Button>
+                    <Button
+                      variant={activeTab === "cv" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("cv")}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Update CV
+                    </Button>
+                    <Button
+                      variant={activeTab === "feedback" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("feedback")}
+                    >
+                      <Star className="mr-2 h-4 w-4" />
+                      Add Feedback
+                    </Button>
+                  </>
+                )}
+                
+                {/* Employer Navigation */}
                 {isEmployer && (
                   <>
                     <Button
@@ -484,10 +563,61 @@ export default function ProfilePage() {
                       onClick={() => setActiveTab("jobs")}
                     >
                       <Briefcase className="mr-2 h-4 w-4" />
-                      Manage Jobs
+                      Job Postings
+                    </Button>
+                    <Button
+                      variant={activeTab === "watchlist" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("watchlist")}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      Watchlist
+                    </Button>
+                    <Button
+                      variant={activeTab === "messages" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("messages")}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                    </Button>
+                    <Button
+                      variant={activeTab === "requests" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("requests")}
+                    >
+                      <InboxIcon className="mr-2 h-4 w-4" />
+                      Manage Requests
+                    </Button>
+                    <Button
+                      variant={activeTab === "feedback" ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("feedback")}
+                    >
+                      <Star className="mr-2 h-4 w-4" />
+                      Add Feedback
                     </Button>
                   </>
                 )}
+                
+                {/* Logout Button for All Users */}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900 dark:hover:text-red-300"
+                  onClick={() => {
+                    if (confirm("Are you sure you want to log out?")) {
+                      logoutMutation.mutate();
+                    }
+                  }}
+                  disabled={logoutMutation.isPending}
+                >
+                  {logoutMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="mr-2 h-4 w-4" />
+                  )}
+                  Log Out
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -675,6 +805,112 @@ export default function ProfilePage() {
                 </Card>
               )}
 
+              {/* Admin Pages */}
+              {activeTab === "review-feedback" && isAdmin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Review Feedback</CardTitle>
+                    <CardDescription>Review and manage user feedback</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">No Feedback to Review</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        User feedback will appear here when it is submitted.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "manage-users" && isAdmin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Manage Users</CardTitle>
+                    <CardDescription>Block, suspend, or reactivate users</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-end mb-4">
+                      <Input 
+                        type="search"
+                        placeholder="Search users..."
+                        className="max-w-xs"
+                      />
+                    </div>
+                    
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Username</TableHead>
+                            <TableHead>User Type</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">employer@example.com</TableCell>
+                            <TableCell>Employer</TableCell>
+                            <TableCell>
+                              <Badge variant="success">Active</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button variant="outline" size="sm">
+                                  <Ban className="h-4 w-4 mr-1" />
+                                  Block
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Suspend
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">jobseeker@example.com</TableCell>
+                            <TableCell>Job Seeker</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-400">Suspended</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button variant="outline" size="sm">
+                                  <Ban className="h-4 w-4 mr-1" />
+                                  Block
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Reactivate
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">blockeduser@example.com</TableCell>
+                            <TableCell>Job Seeker</TableCell>
+                            <TableCell>
+                              <Badge variant="destructive">Blocked</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button variant="outline" size="sm">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Reactivate
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* Employer Pages */}
               {activeTab === "company" && isEmployer && (
                 <Card>
                   <CardHeader>
@@ -778,6 +1014,194 @@ export default function ProfilePage() {
                         Save Company Profile
                       </Button>
                     </form>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* Job Seeker Pages */}
+              {activeTab === "wishlist" && isJobSeeker && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Wishlist</CardTitle>
+                    <CardDescription>Jobs you've saved for later</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">Your Wishlist is Empty</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        Browse jobs and click the heart icon to add them to your wishlist for easy access later.
+                      </p>
+                      <Button className="mt-4" asChild>
+                        <Link href="/jobs">Browse Jobs</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "applications" && isJobSeeker && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Applications</CardTitle>
+                    <CardDescription>Track the status of your job applications</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">No Applications Yet</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        You haven't applied to any jobs yet. Browse jobs and start applying!
+                      </p>
+                      <Button className="mt-4" asChild>
+                        <Link href="/jobs">Browse Jobs</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "messages" && (isJobSeeker || isEmployer) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Messages</CardTitle>
+                    <CardDescription>Your conversations with {isJobSeeker ? "employers" : "job seekers"}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">No Messages Yet</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        When you have conversations with {isJobSeeker ? "employers" : "job seekers"}, they will appear here.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "cv" && isJobSeeker && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Update CV</CardTitle>
+                    <CardDescription>Manage your resume and CV</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="resumeUpload">Upload Resume (PDF)</Label>
+                        <Input id="resumeUpload" type="file" accept=".pdf" />
+                      </div>
+                      
+                      <div>
+                        <Label>Current Resume</Label>
+                        {jobSeekerProfile?.resumeUrl ? (
+                          <div className="flex items-center mt-2 p-4 border rounded-md">
+                            <FileText className="h-8 w-8 text-primary mr-4" />
+                            <div className="flex-1">
+                              <p className="font-medium">My Resume.pdf</p>
+                              <p className="text-sm text-gray-500">Uploaded on {new Date().toLocaleDateString()}</p>
+                            </div>
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={jobSeekerProfile.resumeUrl} target="_blank" rel="noopener noreferrer">
+                                View
+                              </a>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="p-4 border rounded-md text-center text-gray-500">
+                            No resume uploaded yet
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Button className="mt-2">
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Resume
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "feedback" && (isJobSeeker || isEmployer) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Add Feedback</CardTitle>
+                    <CardDescription>Help us improve your experience</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form className="space-y-4">
+                      <div>
+                        <Label htmlFor="feedbackType">Feedback Type</Label>
+                        <Select defaultValue="suggestion">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="suggestion">Suggestion</SelectItem>
+                            <SelectItem value="issue">Report an Issue</SelectItem>
+                            <SelectItem value="praise">Praise</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="feedbackTitle">Title</Label>
+                        <Input id="feedbackTitle" placeholder="Brief title for your feedback" />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="feedbackDetails">Details</Label>
+                        <Textarea 
+                          id="feedbackDetails" 
+                          placeholder="Please provide details about your feedback..."
+                          rows={5}
+                        />
+                      </div>
+                      
+                      <Button className="w-full">
+                        <Send className="mr-2 h-4 w-4" />
+                        Submit Feedback
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* Employer Pages */}
+              {activeTab === "watchlist" && isEmployer && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Watchlist</CardTitle>
+                    <CardDescription>Job seekers you're keeping an eye on</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <Eye className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">Your Watchlist is Empty</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        Add promising candidates to your watchlist to track them.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === "requests" && isEmployer && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Manage Requests</CardTitle>
+                    <CardDescription>Handle incoming job applications and inquiries</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-16">
+                      <InboxIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium mb-2">No Pending Requests</h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        Incoming applications and inquiries will appear here.
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               )}
