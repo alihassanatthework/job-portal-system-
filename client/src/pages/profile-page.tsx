@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { JobSeekerProfile, EmployerProfile, Job } from "@shared/schema";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -854,7 +855,7 @@ export default function ProfilePage() {
                             <TableCell className="font-medium">employer@example.com</TableCell>
                             <TableCell>Employer</TableCell>
                             <TableCell>
-                              <Badge variant="success">Active</Badge>
+                              <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-400">Active</Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex space-x-2">
