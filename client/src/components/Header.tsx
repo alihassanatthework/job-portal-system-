@@ -1,17 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, Search, Briefcase, User, X, Bell } from "lucide-react";
+import { 
+  Menu, Search, Briefcase, User, X, Bell, 
+  Settings, LogOut, FileText, Building, Users,
+  MessageSquare, BookOpen, LayoutDashboard
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "./ThemeToggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, logoutMutation } = useAuth();
+  
+  // Track active link
+  const [activeLink, setActiveLink] = useState("/");
+  
+  // Update active link when location changes
+  useEffect(() => {
+    setActiveLink(location);
+  }, [location]);
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
@@ -27,19 +48,54 @@ export default function Header() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <Link href="/" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-primary border-b-2 border-primary">
+            <Link 
+              href="/" 
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                activeLink === "/" 
+                  ? "text-primary border-primary" 
+                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+            >
               Home
             </Link>
-            <Link href="/jobs" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/jobs" 
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                activeLink === "/jobs" 
+                  ? "text-primary border-primary" 
+                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+            >
               Find Jobs
             </Link>
-            <Link href="/job-seekers" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/job-seekers" 
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                activeLink === "/job-seekers" 
+                  ? "text-primary border-primary" 
+                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+            >
               For Job Seekers
             </Link>
-            <Link href="/employers" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/employers" 
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                activeLink === "/employers" 
+                  ? "text-primary border-primary" 
+                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+            >
               For Employers
             </Link>
-            <Link href="/resources" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/resources" 
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                activeLink === "/resources" 
+                  ? "text-primary border-primary" 
+                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+            >
               Resources
             </Link>
           </nav>
@@ -67,30 +123,127 @@ export default function Header() {
             
             {/* Account menu */}
             {user ? (
-              <div className="hidden sm:flex items-center space-x-2">
-                <Link href="/profile" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {user.username.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      {user.username}
-                    </span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user.userType === "job_seeker" ? "Job Seeker" : "Employer"}
-                    </p>
-                  </div>
-                </Link>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => logoutMutation.mutate()}
-                  className="text-gray-700 dark:text-gray-200 hover:text-primary"
-                >
-                  Logout
-                </Button>
+              <div className="hidden sm:flex items-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 flex items-center gap-2 p-1 pr-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {user.username.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="hidden md:block text-left">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                          {user.username}
+                        </span>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {user.userType === "admin" 
+                            ? "Administrator" 
+                            : user.userType === "job_seeker" 
+                              ? "Job Seeker" 
+                              : "Employer"}
+                        </p>
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.username}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.userType === "admin" 
+                            ? "Administrator" 
+                            : user.userType === "job_seeker" 
+                              ? "Job Seeker" 
+                              : "Employer"}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      {/* Admin options */}
+                      {user.userType === "admin" && (
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/dashboard" className="cursor-pointer">
+                              <LayoutDashboard className="mr-2 h-4 w-4" />
+                              <span>Admin Dashboard</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/users" className="cursor-pointer">
+                              <Users className="mr-2 h-4 w-4" />
+                              <span>Manage Users</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      
+                      {/* Job Seeker options */}
+                      {user.userType === "job_seeker" && (
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link href="/applications" className="cursor-pointer">
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>My Applications</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/messages" className="cursor-pointer">
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              <span>Messages</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      
+                      {/* Employer options */}
+                      {user.userType === "employer" && (
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link href="/profile?tab=posted-jobs" className="cursor-pointer">
+                              <Briefcase className="mr-2 h-4 w-4" />
+                              <span>My Job Posts</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/profile?tab=received-applications" className="cursor-pointer">
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>Applications Received</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/messages" className="cursor-pointer">
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              <span>Messages</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="cursor-pointer"
+                      onClick={() => logoutMutation.mutate()}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
@@ -118,28 +271,175 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
           <div className="pt-2 pb-3 space-y-1">
-            <Link href="/" className="block pl-3 pr-4 py-2 border-l-4 border-primary text-base font-medium text-primary bg-primary-50 dark:bg-primary-900/20">
+            <Link 
+              href="/" 
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                activeLink === "/" 
+                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Home
             </Link>
-            <Link href="/jobs" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/jobs" 
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                activeLink === "/jobs" 
+                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Find Jobs
             </Link>
-            <Link href="/job-seekers" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/job-seekers" 
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                activeLink === "/job-seekers" 
+                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               For Job Seekers
             </Link>
-            <Link href="/employers" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/employers" 
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                activeLink === "/employers" 
+                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               For Employers
             </Link>
-            <Link href="/resources" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
+            <Link 
+              href="/resources" 
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                activeLink === "/resources" 
+                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Resources
             </Link>
+            
+            {/* User-specific links */}
             {user && (
               <>
-                <Link href="/applications" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
-                  My Applications
+                {/* Common link for all user types */}
+                <Link 
+                  href="/profile" 
+                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                    activeLink === "/profile" 
+                      ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                      : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Profile
                 </Link>
-                <Link href="/profile" className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white">
-                  Profile
+                
+                {/* Job Seeker links */}
+                {user.userType === "job_seeker" && (
+                  <>
+                    <Link 
+                      href="/applications" 
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        activeLink === "/applications" 
+                          ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                          : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Applications
+                    </Link>
+                    <Link 
+                      href="/messages" 
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        activeLink === "/messages" 
+                          ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                          : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Messages
+                    </Link>
+                  </>
+                )}
+                
+                {/* Employer links */}
+                {user.userType === "employer" && (
+                  <>
+                    <Link 
+                      href="/profile?tab=posted-jobs" 
+                      className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Job Posts
+                    </Link>
+                    <Link 
+                      href="/profile?tab=received-applications" 
+                      className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Applications Received
+                    </Link>
+                    <Link 
+                      href="/messages" 
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        activeLink === "/messages" 
+                          ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                          : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Messages
+                    </Link>
+                  </>
+                )}
+                
+                {/* Admin links */}
+                {user.userType === "admin" && (
+                  <>
+                    <Link 
+                      href="/admin/dashboard" 
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        activeLink === "/admin/dashboard" 
+                          ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                          : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <Link 
+                      href="/admin/users" 
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        activeLink === "/admin/users" 
+                          ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                          : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Manage Users
+                    </Link>
+                  </>
+                )}
+                
+                <Link 
+                  href="/settings" 
+                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                    activeLink === "/settings" 
+                      ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                      : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Settings
                 </Link>
               </>
             )}
