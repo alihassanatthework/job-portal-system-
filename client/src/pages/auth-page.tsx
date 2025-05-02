@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const loginFormSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -30,12 +32,21 @@ const registerFormSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// Forgot password schema
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+});
+
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
+type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function AuthPage() {
   const [_, setLocation] = useLocation();
   const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  const { toast } = useToast();
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -65,6 +76,14 @@ export default function AuthPage() {
     },
   });
 
+  // Forgot Password form setup
+  const forgotPasswordForm = useForm<ForgotPasswordValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
   // Submit handlers
   const onLoginSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data);
@@ -74,6 +93,17 @@ export default function AuthPage() {
     const { username, password, email, userType } = data;
     registerMutation.mutate({ username, password, email, userType });
   };
+  
+  const handleForgotPassword = (data: ForgotPasswordValues) => {
+    // In a real application, this would make an API call to send a password reset email
+    console.log("Password reset requested for:", data.email);
+    toast({
+      title: "Password Reset Instructions Sent",
+      description: `We've sent password reset instructions to ${data.email}. Please check your inbox.`,
+      duration: 5000,
+    });
+    setResetSent(true);
+  };
 
   if (isLoading) {
     return (
@@ -82,9 +112,67 @@ export default function AuthPage() {
       </div>
     );
   }
-
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-gray-900 px-4 py-12">
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPassword} onOpenChange={setForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{resetSent ? "Reset Email Sent" : "Reset Your Password"}</DialogTitle>
+            <DialogDescription>
+              {resetSent 
+                ? "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."
+                : "Enter your email address and we'll send you a link to reset your password."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!resetSent ? (
+            <Form {...forgotPasswordForm}>
+              <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+                <FormField
+                  control={forgotPasswordForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your email" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setForgotPassword(false)}
+                    type="button"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Reset Link
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            <DialogFooter className="sm:justify-center">
+              <Button onClick={() => {
+                setForgotPassword(false);
+                setResetSent(false);
+              }}>
+                Return to Login
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Main Content */}
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Auth forms */}
         <div className="w-full max-w-md mx-auto">
@@ -141,6 +229,16 @@ export default function AuthPage() {
                         ) : null}
                         Sign In
                       </Button>
+                      <div className="mt-2 text-center">
+                        <Button 
+                          variant="link" 
+                          className="text-sm text-primary" 
+                          onClick={() => setForgotPassword(true)}
+                          type="button"
+                        >
+                          Forgot Password?
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 </CardContent>
