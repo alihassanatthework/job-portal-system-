@@ -19,7 +19,7 @@ export default function Footer() {
                 <span className="sr-only">Facebook</span>
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.instagram.com/alihassan._.804?igsh=MWVuZGppNW1wZmVpYw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-5 w-5" />
               </a>
@@ -27,7 +27,7 @@ export default function Footer() {
                 <span className="sr-only">Twitter</span>
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.linkedin.com/in/alihassan-developer" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <span className="sr-only">LinkedIn</span>
                 <Linkedin className="h-5 w-5" />
               </a>
