@@ -68,26 +68,49 @@ export default function Header() {
             >
               Find Jobs
             </Link>
-            <Link 
-              href="/job-seekers" 
-              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
-                activeLink === "/job-seekers" 
-                  ? "text-primary border-primary" 
-                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-              }`}
-            >
-              For Job Seekers
-            </Link>
-            <Link 
-              href="/employers" 
-              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
-                activeLink === "/employers" 
-                  ? "text-primary border-primary" 
-                  : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-              }`}
-            >
-              For Employers
-            </Link>
+            
+            {/* Show "For Job Seekers" only to non-employers */}
+            {(!user || user.userType !== "employer") && (
+              <Link 
+                href="/job-seekers" 
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                  activeLink === "/job-seekers" 
+                    ? "text-primary border-primary" 
+                    : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                For Job Seekers
+              </Link>
+            )}
+            
+            {/* Show "For Employers" only to non-job seekers */}
+            {(!user || user.userType !== "job_seeker") && (
+              <Link 
+                href="/employers" 
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                  activeLink === "/employers" 
+                    ? "text-primary border-primary" 
+                    : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                For Employers
+              </Link>
+            )}
+            
+            {/* Admin specific navigation */}
+            {user && user.userType === "admin" && (
+              <Link 
+                href="/admin/dashboard" 
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                  activeLink === "/admin/dashboard" 
+                    ? "text-primary border-primary" 
+                    : "text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            
             <Link 
               href="/resources" 
               className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
@@ -293,28 +316,52 @@ export default function Header() {
             >
               Find Jobs
             </Link>
-            <Link 
-              href="/job-seekers" 
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                activeLink === "/job-seekers" 
-                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
-                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              For Job Seekers
-            </Link>
-            <Link 
-              href="/employers" 
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                activeLink === "/employers" 
-                  ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
-                  : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              For Employers
-            </Link>
+            
+            {/* Show "For Job Seekers" only to non-employers */}
+            {(!user || user.userType !== "employer") && (
+              <Link 
+                href="/job-seekers" 
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  activeLink === "/job-seekers" 
+                    ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                    : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                For Job Seekers
+              </Link>
+            )}
+            
+            {/* Show "For Employers" only to non-job seekers */}
+            {(!user || user.userType !== "job_seeker") && (
+              <Link 
+                href="/employers" 
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  activeLink === "/employers" 
+                    ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                    : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                For Employers
+              </Link>
+            )}
+            
+            {/* Admin specific navigation */}
+            {user && user.userType === "admin" && (
+              <Link 
+                href="/admin/dashboard" 
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  activeLink === "/admin/dashboard" 
+                    ? "border-primary text-primary bg-primary-50 dark:bg-primary-900/20" 
+                    : "border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            
             <Link 
               href="/resources" 
               className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
