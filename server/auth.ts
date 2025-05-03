@@ -59,9 +59,19 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
+    // Check if someone is trying to register as admin, which is not allowed
+    if (req.body.userType === "admin") {
+      return res.status(403).json({ error: "Registering as admin is not allowed" });
+    }
+
     const existingUser = await storage.getUserByUsername(req.body.username);
     if (existingUser) {
-      return res.status(400).send("Username already exists");
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    // Ensure only valid user types are allowed
+    if (!["job_seeker", "employer"].includes(req.body.userType)) {
+      return res.status(400).json({ error: "Invalid user type" });
     }
 
     const user = await storage.createUser({

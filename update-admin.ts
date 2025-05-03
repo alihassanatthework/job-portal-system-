@@ -22,20 +22,20 @@ async function updateAdminPassword() {
     });
     
     if (adminUser) {
-      // Update the admin password to "admin"
+      // Update the admin password to "admin1"
       await db.update(users)
         .set({ 
-          password: await hashPassword("admin"),
+          password: await hashPassword("admin1"),
           userType: "admin" // Ensure the user type is set to admin
         })
         .where(eq(users.username, "admin"));
       
-      console.log("✅ Admin password updated to 'admin'");
+      console.log("✅ Admin password updated to 'admin1'");
     } else {
       // Create a new admin user
       const adminUserData = {
         username: "admin",
-        password: await hashPassword("admin"),
+        password: await hashPassword("admin1"),
         email: "admin@jobportal.com",
         userType: "admin"
       };
