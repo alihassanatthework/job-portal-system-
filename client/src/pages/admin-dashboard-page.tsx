@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
   const updateUserStatusMutation = useMutation({
     mutationFn: async ({ userId, status }: { userId: number; status: UserStatus }) => {
       const response = await apiRequest(
-        "PATCH", 
+        "PUT", 
         `/api/admin/users/${userId}/status`,
         { status }
       );
