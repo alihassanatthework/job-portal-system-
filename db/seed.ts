@@ -28,6 +28,9 @@ async function seed() {
     // Check for existing users to avoid duplicates
     const existingUsers = await db.query.users.findMany();
     
+    // Variable to store employer IDs for job creation
+    let employerIds = [];
+    
     if (existingUsers.length === 0) {
       console.log("Seeding users...");
       
@@ -64,7 +67,6 @@ async function seed() {
         }
       ];
       
-      const employerIds = [];
       for (const employer of employerUsers) {
         const validated = insertUserSchema.parse(employer);
         const [newEmployer] = await db.insert(users).values(validated).returning();
@@ -236,7 +238,23 @@ async function seed() {
           .where(eq(users.id, profile.userId));
       }
       console.log(`✅ Seeded ${jobSeekerProfilesData.length} job seeker profiles`);
+    } else {
+      console.log("📝 Users already exist, using existing employer accounts for jobs");
       
+      // Get existing employer user IDs for job creation
+      const employers = existingUsers.filter(user => user.userType === "employer");
+      employerIds = employers.map(employer => employer.id);
+      
+      if (employerIds.length === 0) {
+        console.log("⚠️ No employer users found. Cannot seed jobs.");
+        return;
+      }
+    }
+    
+    // Check if jobs already exist
+    const existingJobs = await db.query.jobs.findMany();
+    
+    if (existingJobs.length === 0 && employerIds.length > 0) {
       // Seed jobs
       console.log("Seeding jobs...");
       const jobsData = [
@@ -252,6 +270,7 @@ async function seed() {
           salaryMax: "160000",
           skills: ["React", "TypeScript", "CSS", "HTML", "Redux"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         },
         {
@@ -266,10 +285,11 @@ async function seed() {
           salaryMax: "170000",
           skills: ["AWS", "Docker", "Kubernetes", "Terraform", "Jenkins"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000) // 45 days from now
         },
         {
-          employerId: employerIds[1],
+          employerId: employerIds.length > 1 ? employerIds[1] : employerIds[0],
           title: "Machine Learning Engineer",
           description: "Help us develop cutting-edge AI solutions for real-world problems in various industries.",
           qualifications: "MS or PhD in Computer Science, Machine Learning, or related field. Experience with deep learning frameworks and natural language processing.",
@@ -280,10 +300,11 @@ async function seed() {
           salaryMax: "180000",
           skills: ["Python", "TensorFlow", "PyTorch", "NLP", "Computer Vision"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) // 60 days from now
         },
         {
-          employerId: employerIds[1],
+          employerId: employerIds.length > 1 ? employerIds[1] : employerIds[0],
           title: "UX/UI Designer",
           description: "We're seeking a talented UX/UI Designer to create beautiful, functional interfaces for our products.",
           qualifications: "3+ years of experience in user interface design, proficiency with design tools, portfolio demonstrating UX thinking.",
@@ -294,10 +315,11 @@ async function seed() {
           salaryMax: "120000",
           skills: ["Figma", "Adobe XD", "User Research", "Prototyping", "Design Systems"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         },
         {
-          employerId: employerIds[2],
+          employerId: employerIds.length > 2 ? employerIds[2] : employerIds[0],
           title: "Backend Developer",
           description: "Join our team to build robust, secure, and scalable backend systems for financial applications.",
           qualifications: "Experience with server-side programming, database design, and API development. Knowledge of security and compliance in finance.",
@@ -308,10 +330,11 @@ async function seed() {
           salaryMax: "150000",
           skills: ["Java", "Spring", "SQL", "MongoDB", "RESTful APIs"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000) // 45 days from now
         },
         {
-          employerId: employerIds[2],
+          employerId: employerIds.length > 2 ? employerIds[2] : employerIds[0],
           title: "Data Analyst Intern",
           description: "Exciting opportunity for students to gain hands-on experience in data analysis for a financial services company.",
           qualifications: "Currently pursuing a degree in Computer Science, Statistics, or related field. Basic knowledge of SQL and data visualization.",
@@ -322,6 +345,7 @@ async function seed() {
           salaryMax: "35",
           skills: ["SQL", "Excel", "PowerBI", "Python", "Statistics"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
         },
         {
@@ -336,10 +360,11 @@ async function seed() {
           salaryMax: "170000",
           skills: ["Product Strategy", "User Stories", "Agile", "Roadmapping", "Analytics"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         },
         {
-          employerId: employerIds[1],
+          employerId: employerIds.length > 1 ? employerIds[1] : employerIds[0],
           title: "Mobile Developer (iOS)",
           description: "Join our mobile team to develop innovative iOS applications using Swift and modern architecture patterns.",
           qualifications: "Experience with iOS development using Swift, knowledge of iOS design patterns, and familiarity with the Apple ecosystem.",
@@ -350,6 +375,7 @@ async function seed() {
           salaryMax: "90",
           skills: ["Swift", "UIKit", "SwiftUI", "Core Data", "iOS"],
           isActive: true,
+          postedAt: new Date(),
           expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) // 60 days from now
         }
       ];
@@ -359,9 +385,8 @@ async function seed() {
         await db.insert(jobs).values(validated);
       }
       console.log(`✅ Seeded ${jobsData.length} jobs`);
-      
     } else {
-      console.log("📝 Users already exist, skipping seed data");
+      console.log(`📝 ${existingJobs.length} jobs already exist, skipping job seeding`);
     }
 
     console.log("✅ Database seeding completed");
