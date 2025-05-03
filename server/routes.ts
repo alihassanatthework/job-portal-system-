@@ -1,9 +1,22 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
-import { eq, like, desc, and, gte, lte, or } from "drizzle-orm";
+import { eq, like, desc, and, gte, lte, or, not } from "drizzle-orm";
+
+// Middleware to check if a user is an admin
+function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  
+  if (req.user.userType !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  
+  next();
+}
 import { db } from "@db";
 import { jobs, applications, jobSeekerProfiles, employerProfiles, users } from "@shared/schema";
 
@@ -377,6 +390,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ errors: error.errors });
       }
       res.status(500).json({ error: "Failed to update application" });
+    }
+  });
+
+  // ---------- ADMIN API ROUTES ----------
+  
+  // Get all users (Protected route for admins)
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+      res.json(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Update user status (block, suspend, activate)
+  app.put("/api/admin/users/:id/status", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      // Validate the update data
+      const validatedData = z.object({
+        status: z.enum(['active', 'blocked', 'suspended'])
+      }).parse(req.body);
+
+      // Check if user exists
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Don't allow blocking/suspending admin users
+      if (user.userType === 'admin' && validatedData.status !== 'active') {
+        return res.status(403).json({ error: "Cannot block or suspend admin users" });
+      }
+
+      const [updatedUser] = await db.update(users)
+        .set({ status: validatedData.status })
+        .where(eq(users.id, userId))
+        .returning();
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Get analytics and statistics for admin dashboard
+  app.get("/api/admin/stats", isAdmin, async (req, res) => {
+    try {
+      // Get total users count by user type
+      const userTypeCounts = await db
+        .select({
+          userType: users.userType,
+          count: count()
+        })
+        .from(users)
+        .groupBy(users.userType);
+
+      // Get total users count by status
+      const userStatusCounts = await db
+        .select({
+          status: users.status,
+          count: count()
+        })
+        .from(users)
+        .groupBy(users.status);
+
+      // Get total jobs count
+      const totalJobs = await db
+        .select({ count: count() })
+        .from(jobs);
+
+      // Get total applications count
+      const totalApplications = await db
+        .select({ count: count() })
+        .from(applications);
+
+      // Get user registrations by date (for the last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const userRegistrations = await db
+        .select({
+          date: sql`DATE(${users.createdAt})`,
+          count: count()
+        })
+        .from(users)
+        .where(gte(users.createdAt, thirtyDaysAgo))
+        .groupBy(sql`DATE(${users.createdAt})`)
+        .orderBy(sql`DATE(${users.createdAt})`);
+
+      res.json({
+        userTypeCounts,
+        userStatusCounts,
+        totalJobs: totalJobs[0]?.count || 0,
+        totalApplications: totalApplications[0]?.count || 0,
+        userRegistrations
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Failed to fetch admin statistics" });
     }
   });
 

@@ -14,6 +14,8 @@ import ApplicationsPage from "./pages/applications-page";
 import ResourcesPage from "./pages/resources-page";
 import ForJobSeekersPage from "./pages/for-job-seekers-page";
 import ForEmployersPage from "./pages/for-employers-page";
+import AdminDashboardPage from "./pages/admin-dashboard-page";
+import ManageUsersPage from "./pages/manage-users-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import { ThemeProvider } from "./hooks/use-theme";
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/employers" component={ForEmployersPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/applications" component={ApplicationsPage} />
+      <ProtectedRoute path="/admin/dashboard" component={AdminDashboardPage} />
+      <ProtectedRoute path="/admin/users" component={ManageUsersPage} />
       <Route component={NotFound} />
     </Switch>
   );

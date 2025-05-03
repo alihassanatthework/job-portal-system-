@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   userType: text("user_type").notNull().default("job_seeker"), // 'job_seeker' or 'employer' or 'admin'
   profileCompleted: boolean("profile_completed").default(false),
+  status: text("status").notNull().default("active"), // 'active', 'blocked', or 'suspended'
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
