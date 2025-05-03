@@ -91,8 +91,8 @@ export default function ManageUsersPage() {
   });
 
   // Handle status change
-  const handleStatusChange = (userId: number, newStatus: UserStatus) => {
-    updateUserStatusMutation.mutate({ userId, newStatus });
+  const handleStatusChange = (userId: number, status: UserStatus) => {
+    updateUserStatusMutation.mutate({ userId, status });
   };
 
   // If still loading, show loading state
