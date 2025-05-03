@@ -37,7 +37,7 @@ async function seed() {
       // Create admin user with default credentials
       const adminUser = {
         username: "admin",
-        password: await hashPassword("admin"),
+        password: await hashPassword("admin1"),
         email: "admin@jobportal.com",
         userType: "admin"
       };
