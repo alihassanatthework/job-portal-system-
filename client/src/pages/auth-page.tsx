@@ -24,7 +24,7 @@ const registerFormSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-  userType: z.enum(["job_seeker", "employer", "admin"], {
+  userType: z.enum(["job_seeker", "employer"], {
     required_error: "Please select a user type",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -300,7 +300,6 @@ export default function AuthPage() {
                               <SelectContent>
                                 <SelectItem value="job_seeker">Job Seeker</SelectItem>
                                 <SelectItem value="employer">Employer</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />

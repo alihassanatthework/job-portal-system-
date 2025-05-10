@@ -16,13 +16,12 @@ export const users = pgTable("users", {
 });
 
 export const insertUserSchema = createInsertSchema(users, {
-  username: (schema) => schema.min(3, "Username must be at least 3 characters"),
-  password: (schema) => schema.min(6, "Password must be at least 6 characters"),
-  email: (schema) => schema.email("Must provide a valid email"),
-  userType: (schema) => schema.refine(
-    val => ['job_seeker', 'employer', 'admin'].includes(val),
-    { message: "User type must be one of: job_seeker, employer, admin" }
-  )
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Must provide a valid email"),
+  userType: z.enum(['job_seeker', 'employer', 'admin'], {
+    errorMap: () => ({ message: "User type must be one of: job_seeker, employer, admin" })
+  })
 }).pick({
   username: true,
   password: true,
@@ -51,15 +50,15 @@ export const jobSeekerProfiles = pgTable("job_seeker_profiles", {
 });
 
 export const insertJobSeekerProfileSchema = createInsertSchema(jobSeekerProfiles, {
-  firstName: (schema) => schema.min(2, "First name must be at least 2 characters"),
-  lastName: (schema) => schema.min(2, "Last name must be at least 2 characters"),
-  phone: (schema) => schema.optional(),
-  location: (schema) => schema.optional(),
-  bio: (schema) => schema.optional(),
-  resumeUrl: (schema) => schema.optional(),
-  skills: (schema) => schema.optional(),
-  education: (schema) => schema.optional(),
-  experience: (schema) => schema.optional()
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  bio: z.string().optional(),
+  resumeUrl: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  education: z.any().optional(),
+  experience: z.any().optional()
 });
 
 export type InsertJobSeekerProfile = z.infer<typeof insertJobSeekerProfileSchema>;
@@ -81,13 +80,13 @@ export const employerProfiles = pgTable("employer_profiles", {
 });
 
 export const insertEmployerProfileSchema = createInsertSchema(employerProfiles, {
-  companyName: (schema) => schema.min(2, "Company name must be at least 2 characters"),
-  industry: (schema) => schema.min(2, "Industry must be at least 2 characters"),
-  companySize: (schema) => schema.optional(),
-  location: (schema) => schema.optional(),
-  website: (schema) => schema.optional(),
-  description: (schema) => schema.optional(),
-  logoUrl: (schema) => schema.optional()
+  companyName: z.string().min(2, "Company name must be at least 2 characters"),
+  industry: z.string().min(2, "Industry must be at least 2 characters"),
+  companySize: z.string().optional(),
+  location: z.string().optional(),
+  website: z.string().optional(),
+  description: z.string().optional(),
+  logoUrl: z.string().optional()
 });
 
 export type InsertEmployerProfile = z.infer<typeof insertEmployerProfileSchema>;
@@ -113,20 +112,19 @@ export const jobs = pgTable("jobs", {
 });
 
 export const insertJobSchema = createInsertSchema(jobs, {
-  title: (schema) => schema.min(5, "Job title must be at least 5 characters"),
-  description: (schema) => schema.min(20, "Description must be at least 20 characters"),
-  qualifications: (schema) => schema.min(10, "Qualifications must be at least 10 characters"),
-  responsibilities: (schema) => schema.min(10, "Responsibilities must be at least 10 characters"),
-  location: (schema) => schema.min(2, "Location must be at least 2 characters"),
-  jobType: (schema) => schema.refine(
-    val => ['full-time', 'part-time', 'contract', 'internship'].includes(val),
-    { message: "Job type must be one of: full-time, part-time, contract, internship" }
-  ),
-  salaryMin: (schema) => schema.optional(),
-  salaryMax: (schema) => schema.optional(),
-  skills: (schema) => schema.optional(),
-  isActive: (schema) => schema.optional(),
-  expiresAt: (schema) => schema.optional()
+  title: z.string().min(5, "Job title must be at least 5 characters"),
+  description: z.string().min(20, "Description must be at least 20 characters"),
+  qualifications: z.string().min(10, "Qualifications must be at least 10 characters"),
+  responsibilities: z.string().min(10, "Responsibilities must be at least 10 characters"),
+  location: z.string().min(2, "Location must be at least 2 characters"),
+  jobType: z.enum(['full-time', 'part-time', 'contract', 'internship'], {
+    errorMap: () => ({ message: "Job type must be one of: full-time, part-time, contract, internship" })
+  }),
+  salaryMin: z.number().optional(),
+  salaryMax: z.number().optional(),
+  skills: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
+  expiresAt: z.date().optional()
 });
 
 export type InsertJob = z.infer<typeof insertJobSchema>;
@@ -146,13 +144,12 @@ export const applications = pgTable("applications", {
 });
 
 export const insertApplicationSchema = createInsertSchema(applications, {
-  resumeUrl: (schema) => schema.optional(),
-  coverLetter: (schema) => schema.optional(),
-  compatibilityScore: (schema) => schema.optional(),
-  status: (schema) => schema.refine(
-    val => ['applied', 'reviewed', 'interviewing', 'offered', 'rejected'].includes(val),
-    { message: "Status must be one of: applied, reviewed, interviewing, offered, rejected" }
-  )
+  resumeUrl: z.string().optional(),
+  coverLetter: z.string().optional(),
+  compatibilityScore: z.number().optional(),
+  status: z.enum(['applied', 'reviewed', 'interviewing', 'offered', 'rejected'], {
+    errorMap: () => ({ message: "Status must be one of: applied, reviewed, interviewing, offered, rejected" })
+  })
 });
 
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
@@ -181,7 +178,7 @@ export const watchlists = pgTable("watchlists", {
 });
 
 export const insertWatchlistSchema = createInsertSchema(watchlists, {
-  notes: (schema) => schema.optional()
+  notes: z.string().optional()
 });
 
 export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
@@ -198,7 +195,7 @@ export const messages = pgTable("messages", {
 });
 
 export const insertMessageSchema = createInsertSchema(messages, {
-  content: (schema) => schema.min(1, "Message cannot be empty")
+  content: z.string().min(1, "Message cannot be empty")
 });
 
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
@@ -217,13 +214,12 @@ export const feedback = pgTable("feedback", {
 });
 
 export const insertFeedbackSchema = createInsertSchema(feedback, {
-  type: (schema) => schema.refine(
-    val => ['bug', 'feature', 'complaint', 'other'].includes(val),
-    { message: "Type must be one of: bug, feature, complaint, other" }
-  ),
-  content: (schema) => schema.min(10, "Content must be at least 10 characters"),
-  status: (schema) => schema.optional(),
-  adminResponse: (schema) => schema.optional()
+  type: z.enum(['bug', 'feature', 'complaint', 'other'], {
+    errorMap: () => ({ message: "Type must be one of: bug, feature, complaint, other" })
+  }),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+  status: z.string().optional(),
+  adminResponse: z.string().optional()
 });
 
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
